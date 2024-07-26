@@ -17,7 +17,7 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     string private constant SYMBOL = "$1AM";
 
     address public childGateway;
-    address public override l1Address;
+    address private _l1Address;
 
     modifier onlyChildGateway() {
         require(msg.sender == childGateway, "NOT_GATEWAY");
@@ -32,7 +32,7 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
         }
 
         childGateway = _childGateway;
-        l1Address = _rootTokenAddress;
+        _l1Address = _rootTokenAddress;
 
         __Ownable_init(msg.sender);
         __ERC20_init(NAME, SYMBOL);
@@ -59,6 +59,10 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
 
     function unpause() public whenPaused onlyOwner {
         _unpause();
+    }
+
+    function l1Address() public view override returns (address) {
+        return _l1Address;
     }
 
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
