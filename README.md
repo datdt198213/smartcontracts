@@ -9,3 +9,9 @@
     + AccessPass.sol: NFT contract
     + AccessPassFactory.sol: a factory contract, used to create all AccessPass instances.
     + AccessPassEndpoint.sol: an endpoint contract for creating nft collections, minting nfts and managing proxies (of all created collections).
+
+### Run test command
+```
+yarn test
+```
+

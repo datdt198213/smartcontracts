@@ -1,5 +1,6 @@
 import { HardhatUserConfig, task } from "hardhat/config";
 import '@openzeppelin/hardhat-upgrades';
+import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-contract-sizer";
 
 require('dotenv').config()
@@ -26,8 +27,7 @@ const config: HardhatUserConfig = {
       accounts: [''],
     },
     arbitrum_l2: {
-      //url: 'https://sepolia-rollup.arbitrum.io/rpc',
-	  url: 'http://3.139.144.111:8547',
+      url: 'https://sepolia-rollup.arbitrum.io/rpc',
       accounts: [''],
 	},
   },
