@@ -8,6 +8,7 @@ import "./scripts/tasks/deploy.ts";
 import "./scripts/tasks/gen.ts";
 import "./scripts/tasks/mint.ts";
 import "./scripts/tasks/transfer.ts";
+import "./scripts/tasks/xferEth.ts";
 
   
 const config: HardhatUserConfig = {

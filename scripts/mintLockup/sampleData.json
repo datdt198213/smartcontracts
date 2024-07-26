@@ -1,0 +1,29 @@
+[
+    {
+      "beneficiary": "0x781ea3e6b43Dd6fdB19B4B89A4335C14231Ea0ff",
+      "start": "2024-07-26T09:12:00",
+      "cliff": "2024-07-26T09:13:00",
+      "end": "2024-07-26T09:14:00",
+      "operator": "0xc2CCcfd3215A44104D74c5188217574c92d9d745",
+      "revocable": true,
+      "amount": 100
+    },
+    {
+      "beneficiary": "0x3749C56E0CAd27f49Ac9BB4deEaf220d82625D3B",
+      "start": "2024-07-27T13:00:00",
+      "cliff": "2024-07-27T14:00:00",
+      "end": "2024-07-27T15:00:00",
+      "operator": "0xc2CCcfd3215A44104D74c5188217574c92d9d745",
+      "revocable": false,
+      "amount": 5000
+    },
+    {
+      "beneficiary": "0x24c84dF238562e853e03817916908C1e4e1D51Fb",
+      "start": "2024-07-26T15:01:00",
+      "cliff": "2024-07-26T15:10:05",
+      "end": "2024-07-26T15:15:03",
+      "revocable": true,
+      "amount": 1500
+    }
+  ]
+  
