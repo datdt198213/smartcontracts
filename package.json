@@ -1,0 +1,41 @@
+{
+  "name": "Midnight-Studio",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "hardhat compile",
+    "deployChild": "hardhat deployChild --network conduit",
+    "deployRoot": "hardhat deployRoot --network arbitrum_l2",
+    "gen": "hardhat gen",
+    "mint": "hardhat mint --network arbitrum_l2",
+    "transfer": "hardhat transfer",
+    "verify": "hardhat verify"
+  },
+  "dependencies": {
+    "@arbitrum/token-bridge-contracts": "^1.2.1",
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
+    "@nomicfoundation/hardhat-ignition": "^0.15.5",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
+    "@nomicfoundation/hardhat-verify": "^2.0.8",
+    "@nomicfoundation/ignition-core": "^0.15.5",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "@openzeppelin/defender-sdk-base-client": "^1.14.1",
+    "@openzeppelin/defender-sdk-deploy-client": "^1.14.1",
+    "@openzeppelin/defender-sdk-network-client": "^1.14.1",
+    "@openzeppelin/hardhat-upgrades": "^3.2.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
+    "hardhat": "^2.22.4",
+    "hardhat-contract-sizer": "^2.10.0",
+    "hardhat-gas-reporter": "^2.2.0",
+    "install": "^0.13.0",
+    "solidity-coverage": "^0.8.1",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.4.5",
+    "yarn": "^1.22.22"
+  }
+}
