@@ -17,15 +17,19 @@ describe("AccessPass", function () {
         nonAdmin: Signer,
         endpoint: Signer,
         nonEndpoint: Signer,
+        operator: Signer,
         receiver: Signer,
         proxy: Signer,
         nonApproval: Signer;
     let messageRevertOnlyOwnerOradmin: string;
     const baseURLDisplay = "https://midnight-studio.io/metadata/";
     const baseURLOriginal = "ipfs://abcxyz/";
+    const adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    const opRole = "0x97667070c54ef182b0f5858b034beac1b6f3089aa2d3188bb1e8929f4fa9b929";
+    const proxyRole = "0x77d72916e966418e6dc58a19999ae9934bef3f749f1547cde0a86e809f19c89b";
 
     beforeEach(async () => {
-        [deployer, admin, nonAdmin, endpoint, nonEndpoint, proxy, receiver, nonApproval] =
+        [deployer, admin, nonAdmin, endpoint, nonEndpoint, operator, proxy, receiver, nonApproval] =
             await hre.ethers.getSigners();
         name = "Weapon 1";
         symbol = "W1";
@@ -49,19 +53,16 @@ describe("AccessPass", function () {
     });
 
     describe("Initialize successfully", async function () {
-        const OPERATOR_ROLE = await accessPass.OPERATOR_ROLE();
-        const DEFAULT_ADMIN_ROLE = await accessPass.DEFAULT_ADMIN_ROLE();
-
         it("The endpoint should have operator and admin roles", async function () {
             expect(
-                await accessPass.connect(owner).hasRole(
-                    OPERATOR_ROLE,
+                await accessPass.connect(endpoint).hasRole(
+                    opRole,
                     await endpoint.getAddress()
                 )
             ).to.be.equal(true);
             expect(
-                await accessPass.connect(owner).hasRole(
-                    DEFAULT_ADMIN_ROLE,
+                await accessPass.connect(endpoint).hasRole(
+                    adminRole,
                     await endpoint.getAddress()
                 )
             ).to.be.equal(true);
@@ -69,7 +70,7 @@ describe("AccessPass", function () {
 
         it(`The admin wallet should have Admin role`, async function () {
             expect(
-                await accessPass.connect(owner).hasRole(DEFAULT_ADMIN_ROLE, admin)
+                await accessPass.connect(admin).hasRole(adminRole, admin)
             ).to.be.equal(true);
         });
     });
@@ -480,6 +481,216 @@ describe("AccessPass", function () {
         })
     })
 
+    describe("lock(uint256)", async function () {
+        let tokenIds : Array<Number>
+        this.beforeEach(async function () {
+            tokenIds = [1,2,3,4,5,6]
+            await grantRole(accessPass, admin, "OPERATOR_ROLE", await operator.getAddress());
+            await accessPass.connect(operator).mint(await receiver.getAddress(), tokenIds);
+        })
+
+        it(`Operator can execute`, async function () {
+            await expect(accessPass.connect(operator).lock(tokenIds[0])).not.to.be.reverted
+        })
+
+        it(`Non-operator can not execute`, async function () {
+            await expect(accessPass.connect(receiver).lock(tokenIds[0])).to.be.revertedWithCustomError(accessPass, 'AccessControlUnauthorizedAccount')
+        })
+
+        it(`Should fail when already locked`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(operator).lock(tokenIds[0])).to.be.revertedWithoutReason
+        })
+
+        it(`Should fail with non-existent token`, async function () {
+            const tokenId = 7
+            await expect(accessPass.connect(operator).lock(tokenId)).to.be.revertedWithCustomError(accessPass, 'ERC721NonexistentToken')
+        })
+
+        it(`Should fail to transfer the locked token`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(receiver).transferFrom(await receiver.getAddress(), await operator.getAddress(), tokenIds[0])).to.be.revertedWithoutReason
+        })
+
+        it(`Should fail to burn the locked token`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(receiver).burn(tokenIds[0])).to.be.revertedWithoutReason
+
+            await grantRole(accessPass, admin, "PROXY_ROLE", await proxy.getAddress());
+            await expect(accessPass.connect(proxy).burn(tokenIds[0])).to.be.revertedWithoutReason
+        })
+
+        it(`Token owner can transfer his nft before it is locked, but since the nft is locked, it can not be transferred anymore`, async function () {
+            // Transfer nft from Receiver to Operator
+            await expect(transferFrom(accessPass, receiver, await receiver.getAddress(), await operator.getAddress(), tokenIds[0])).not.to.be.reverted
+
+            await lock(accessPass, operator, tokenIds[0])
+
+            // Transfer tokenIds[0] from Operator to Receiver
+            await expect(transferFrom(accessPass, operator, await operator.getAddress(), await receiver.getAddress(), tokenIds[0])).to.be.revertedWithoutReason
+        })
+
+        it(`Should emit a Lock event`, async function () {
+            const receipt = await lock(accessPass, operator, tokenIds[0])
+            const iface = new ethers.Interface(['event Lock(uint256 indexed id)'])
+
+            var hasEvent = false;
+            for (const log of receipt.logs) {
+                const mLog = iface.parseLog(log)
+                if(mLog && mLog.name === `Lock`) {
+                    const {id} = mLog.args
+                    expect(id).to.be.equal(tokenIds[0])
+                    hasEvent = true;
+                }
+            }
+
+            expect(hasEvent).to.be.equal(true)
+        })
+
+        it(`Should update locking status`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            const hasLocked = await isLocked(accessPass, operator, tokenIds[0])
+            expect(hasLocked).to.be.equal(true)
+        })
+    })
+
+    describe(`unlock(uint256)`, async function () {
+        let tokenIds : Array<Number>
+        this.beforeEach(async function () {
+            tokenIds = [1,2,3,4,5,6];
+            await grantRole(accessPass, admin, "OPERATOR_ROLE", await operator.getAddress())
+            await accessPass.connect(operator).mint(await receiver.getAddress(), tokenIds);
+        })
+        
+        it(`Operator can execute`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(operator).unlock(tokenIds[0])).not.to.be.reverted
+        }) 
+
+        it(`Non-operator can not execute`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(receiver).unlock(tokenIds[0])).to.be.revertedWithCustomError(accessPass, 'AccessControlUnauthorizedAccount')
+        })
+
+        it(`Should fail when already unlocked`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await unlock(accessPass, operator, tokenIds[0])
+
+            await expect(accessPass.connect(operator).unlock(tokenIds[0])).to.be.revertedWithoutReason
+        })
+
+        it(`Should fail when not get locked`, async function () {
+            await expect(accessPass.connect(operator).unlock(tokenIds[0])).to.be.revertedWithoutReason
+        }) 
+
+        it(`Should fail with non-existent token`, async function () {
+            const tokenId = 7
+            await expect(accessPass.connect(operator).unlock(tokenId)).to.be.revertedWithCustomError(accessPass, 'ERC721NonexistentToken')
+            
+        })
+
+        it(`Should be able to transfer the unlocked token`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(transferFrom(accessPass, receiver, await receiver.getAddress(), await operator.getAddress(), tokenIds[0])).to.be.revertedWithoutReason
+
+            await unlock(accessPass, operator, tokenIds[0])
+            const receipt = await transferFrom(accessPass, receiver, await receiver.getAddress(), await operator.getAddress(), tokenIds[0])
+            const iface = new ethers.Interface([`event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`])
+            var hasEvent = false
+            for (const log of receipt.logs ) {
+                const mLog = iface.parseLog(log);
+                if (mLog && mLog.name === `Transfer`) {
+                    const {from, to, tokenId} = mLog.args
+                    expect(from).to.be.equal(await receiver.getAddress())
+                    expect(to).to.be.equal(await operator.getAddress())
+                    expect(tokenId).to.be.equal(tokenIds[0])
+                    hasEvent = true
+                }
+            }
+
+            expect(hasEvent).to.be.equal(true)
+        })
+
+        it(`Should be able to burn the unlocked token`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await expect(accessPass.connect(receiver).burn(tokenIds[0])).to.be.revertedWithoutReason
+
+            await unlock(accessPass, operator, tokenIds[0])
+            const receipt = await (await accessPass.connect(receiver).burn(tokenIds[0])).wait();
+            const iface = new ethers.Interface([`event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`])
+            var hasEvent = false
+            for (const log of receipt.logs ) {
+                const mLog = iface.parseLog(log);
+                if (mLog && mLog.name === `Transfer`) {
+                    const {from, to, tokenId} = mLog.args
+                    expect(from).to.be.equal(await receiver.getAddress())
+                    expect(to).to.be.equal(ZeroAddress)
+                    expect(tokenId).to.be.equal(tokenIds[0])
+                    hasEvent = true
+                }
+            }
+
+            expect(hasEvent).to.be.equal(true)
+        })
+
+        it(`Should emit an Unlock event`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            const receipt = await unlock(accessPass, operator, tokenIds[0])
+
+            const iface = new ethers.Interface(['event Unlock(uint256 indexed id)'])
+            var hasEvent = false;
+            for (const log of receipt.logs) {
+                const mLog = iface.parseLog(log)
+                if(mLog && mLog.name === `Unlock`) {
+                    const {id} = mLog.args
+                    expect(id).to.be.equal(tokenIds[0])
+                    hasEvent = true;
+                }
+            }
+
+            expect(hasEvent).to.be.equal(true)
+        })
+
+        it(`Should update locking status`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await unlock(accessPass, operator, tokenIds[0])
+            const hasLocked = await isLocked(accessPass, operator, tokenIds[0])
+            expect(hasLocked).to.be.equal(false)
+        })
+    })
+
+    describe(`isLocked(uint256)`, async function () {
+        let tokenIds : Array<Number>
+        this.beforeEach(async function () {
+            tokenIds = [1,2,3,4,5,6];
+            await grantRole(accessPass, admin, "OPERATOR_ROLE", await operator.getAddress())
+            await accessPass.connect(operator).mint(await receiver.getAddress(), tokenIds);
+        })
+
+        it(`Should revert with non-existent token`, async function () {
+            const tokenId = 7
+            await expect(accessPass.connect(operator).isLocked(tokenId)).to.be.revertedWithCustomError(accessPass, 'ERC721NonexistentToken')
+        })
+
+        it(`Should return true with already locked token`, async function() {
+            await lock(accessPass, operator, tokenIds[0])
+            const hasLock = await isLocked(accessPass, operator, tokenIds[0])
+            expect(hasLock).to.be.equal(true)
+        })
+
+        it(`Should return false with already unlocked token`, async function () {
+            await lock(accessPass, operator, tokenIds[0])
+            await unlock(accessPass, operator, tokenIds[0])
+            const hasLock = await isLocked(accessPass, operator, tokenIds[0])
+            expect(hasLock).to.be.equal(false)
+        })
+
+        it(`Should return false with every nfts which is never get locked`, async function () {
+            const hasLock = await isLocked(accessPass, operator, tokenIds[0])
+            expect(hasLock).to.be.equal(false)
+        })
+    })
+
     async function setApprovalForAll(contract : Contract, signer : Signer, operator : string, approved : boolean) {
         const tx = await contract.connect(signer).setApprovalForAll(operator, approved)
         const receipt = await tx.wait()
@@ -496,5 +707,37 @@ describe("AccessPass", function () {
         const tx = await contract.connect(signer).transferFrom(from, to, tokenId);
         const receipt = await tx.wait();
         return receipt;
+    }
+
+    async function grantRole(contract: Contract, signer: Signer, role : string, account: string) {
+        var tx, receipt;
+        if (role === `OPERATOR_ROLE`) {
+            tx = await contract.connect(signer).grantRole(opRole, account);
+            receipt = await tx.wait()
+    
+        } else if (role === `PROXY_ROLE`){
+            tx = await contract.connect(signer).grantRole(proxyRole, account);
+            receipt = await tx.wait()
+        } else {
+            throw new Error(`INVALID ROLE ${role}`)
+        }
+        return receipt;
+    }
+
+    async function lock(contract: Contract, signer : Signer, tokenId: Number) {
+        const tx = await contract.connect(signer).lock(tokenId);
+        const receipt = await tx.wait();
+        return receipt;
+    }
+
+    async function unlock(contract: Contract, signer : Signer, tokenId: Number) {
+        const tx = await contract.connect(signer).unlock(tokenId);
+        const receipt = await tx.wait();
+        return receipt;
+    }
+
+    async function isLocked(contract: Contract, signer: Signer, tokenId: Number) {
+        const isLocked = await contract.connect(signer).isLocked(tokenId);
+        return isLocked;
     }
 });
