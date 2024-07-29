@@ -3,9 +3,9 @@
 pragma solidity ^0.8.20;
 
 interface IAccessPass {
-    function OPERATOR_ROLE() external returns (bytes32);
+    function OPERATOR_ROLE() external view returns (bytes32);
 
-    function PROXY_ROLE() external returns (bytes32);
+    function PROXY_ROLE() external view returns (bytes32);
 
     function setBaseOriginalURL(string memory baseURL) external;
 
