@@ -45,6 +45,7 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
     }
 
     function setFactory(address _factory) external onlyOwner {
+        require(_factory != address(0));
         factory = _factory;
     }
 
@@ -53,6 +54,10 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
         string memory symbol,
         string memory dataPath
     ) external onlyRole(OPERATOR_ROLE) override {
+        require(bytes(name).length > 0);
+        require(bytes(symbol).length > 0);
+        require(bytes(dataPath).length > 0);
+
         if (getCollectionAddress(name) != address(0)) {
             revert CollectionExist(name);
         }

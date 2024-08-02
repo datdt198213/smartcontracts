@@ -24,6 +24,8 @@ contract AccessPassFactory is Initializable, ContextUpgradeable, OwnableUpgradea
     }
 
     function initialize(address _endpoint) public initializer {
+        require(_endpoint != address(0));
+
         __Ownable_init(msg.sender);
 
         endpoint = _endpoint;

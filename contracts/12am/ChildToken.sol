@@ -30,6 +30,8 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     }
 
     function initialize(address _childGateway, address _rootTokenAddress, address[] memory _proxies) public initializer {
+        require(_childGateway != address(0) && _rootTokenAddress != address(0));
+
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         for (uint256 i = 0; i < _proxies.length; i++) {
             require(_proxies[i] != address(0), "Can't add a null address as proxy");

@@ -32,6 +32,8 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
     }
 
     function initialize(address[] memory _operators, address _gateway, address _router) public initializer {
+        require(_gateway != address(0) && _router != address(0));
+
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         for (uint256 i = 0; i < _operators.length; i++) {
             require(_operators[i] != address(0), "Can't add a null address as operator");
@@ -48,10 +50,12 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
     }
 
     function mint(address wallet, uint256 amount) public onlyRole(OPERATOR_ROLE) {
+        require(amount > 0);
         _mint(wallet, amount);
     }
 
     function burn(address wallet, uint256 amount) public onlyRole(OPERATOR_ROLE) {
+        require(amount > 0);
         _burn(wallet, amount);
     }
 
@@ -64,6 +68,10 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
         bool revocable,
         uint256 amount
     ) public onlyRole(OPERATOR_ROLE) {
+        require(beneficiary != address(0) && operator != address(0));
+        require(start > 0 && cliff > 0 && duration > 0);
+        require(amount > 0);
+
         address vaultProxy = IVestingWalletFactory(vaultFactory).createVault(beneficiary, start, cliff, duration, operator, revocable);
 
         _mint(vaultProxy, amount);
@@ -79,6 +87,7 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
     }
 
     function setVaultFactory(address _vaultFactory) external onlyOwner {
+        require(_vaultFactory != address(0));
         vaultFactory = _vaultFactory;
     }
 

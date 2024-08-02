@@ -22,6 +22,8 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         Ownable(admin)
         ERC721(name, symbol)
     {
+        require(endpoint != address(0));
+
         _proxyApproved = true;
 
         // Grant the contract deployer the default admin role: it will be able
@@ -33,7 +35,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         _grantRole(OPERATOR_ROLE, endpoint);
         // Initialize proxies list
         for (uint256 i = 0; i < proxies.length; i++) {
-            require(proxies[i] != address(0), "Can't add a null address as proxy");
+            require(proxies[i] != address(0));
             _grantRole(PROXY_ROLE, proxies[i]);
         }
     }

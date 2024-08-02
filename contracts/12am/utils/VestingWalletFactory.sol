@@ -26,6 +26,8 @@ contract VestingWalletFactory is Initializable, ContextUpgradeable, OwnableUpgra
     }
 
     function initialize(address _token) public initializer {
+        require(_token != address(0));
+
         __Ownable_init(msg.sender);
 
         token = _token;
