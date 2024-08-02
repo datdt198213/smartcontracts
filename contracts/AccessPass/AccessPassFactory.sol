@@ -18,6 +18,11 @@ contract AccessPassFactory is Initializable, ContextUpgradeable, OwnableUpgradea
         _;
     }
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address _endpoint) public initializer {
         __Ownable_init(msg.sender);
 

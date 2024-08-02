@@ -24,6 +24,11 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
         _;
     }
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address _childGateway, address _rootTokenAddress, address[] memory _proxies) public initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         for (uint256 i = 0; i < _proxies.length; i++) {

@@ -26,6 +26,11 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
     bool internal shouldRegisterGateway;
     address internal vaultFactory;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address[] memory _operators, address _gateway, address _router) public initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         for (uint256 i = 0; i < _operators.length; i++) {

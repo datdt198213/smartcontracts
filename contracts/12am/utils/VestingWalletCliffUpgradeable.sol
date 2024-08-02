@@ -31,6 +31,11 @@ contract VestingWalletCliffUpgradeable is Initializable, VestingWalletUpgradeabl
     /// @dev The specified cliff duration is larger than the vesting duration.
     error InvalidCliffDuration(uint64 cliffSeconds, uint64 durationSeconds);
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address beneficiary, uint64 start, uint64 cliffSeconds, uint64 duration, address operator, bool revocable) public initializer {
         __VestingWalletCliff_init(beneficiary, start, cliffSeconds, duration, operator, revocable);
     }

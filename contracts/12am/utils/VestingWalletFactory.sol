@@ -20,6 +20,11 @@ contract VestingWalletFactory is Initializable, ContextUpgradeable, OwnableUpgra
         _;
     }
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address _token) public initializer {
         __Ownable_init(msg.sender);
 

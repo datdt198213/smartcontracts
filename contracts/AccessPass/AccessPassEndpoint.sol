@@ -25,6 +25,11 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
     mapping(address => uint256) internal maxOwnedTokenIds;
     address internal factory;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address[] memory _operators, address[] memory _proxies) public initializer {
         __Ownable_init(msg.sender);
 
