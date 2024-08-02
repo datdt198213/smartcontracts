@@ -154,21 +154,17 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         return super.isApprovedForAll(owner, operator);
     }
 
-    function _isAuthorized(address owner, address spender, uint256 tokenId)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        return super._isAuthorized(owner, spender, tokenId) || (_proxyApproved && hasRole(PROXY_ROLE, spender));
-    }
-
     function _update(
         address to,
         uint256 tokenId,
         address auth
     ) internal virtual override returns (address) {
         address from = _ownerOf(tokenId);
+
+        if (from == address(0) && auth != address(0)) {
+            revert ERC721InvalidSender(address(0));
+        }
+
         if (from != address(0)) {
             require(!isLocked(tokenId));
         }

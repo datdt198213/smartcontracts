@@ -473,7 +473,11 @@ describe("AccessPass", function () {
         })
 
         it(`Should fail with non-existent tokenId`, async function () {
-            await expect(accessPass.connect(receiver).transferFrom(await receiver.getAddress(), await admin.getAddress(), 7)).to.be.revertedWithCustomError(accessPass, 'ERC721NonexistentToken')
+            await expect(accessPass.connect(receiver).transferFrom(await receiver.getAddress(), await admin.getAddress(), 7)).to.be.revertedWithCustomError(accessPass, 'ERC721InvalidSender')
+        })
+
+        it(`Should not allow any proxy to mint tokens`, async function () {
+            await expect(accessPass.connect(proxy).transferFrom(ZeroAddress, await receiver.getAddress(), 7)).to.be.revertedWithCustomError(accessPass, 'ERC721InvalidSender')
         })
 
         it(`A non-approved account cannot execute`, async function () {
