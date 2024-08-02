@@ -16,4 +16,6 @@ interface IAccessPass {
     function lock(uint256 id) external;
 
     function unlock(uint256 id) external;
+
+    function maxOwnedTokenId() external view returns (uint256);
 }

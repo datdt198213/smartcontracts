@@ -22,7 +22,6 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
     mapping(string => address) internal collections;
     address[] internal collectionsList;
     EnumerableSet.AddressSet internal proxies;
-    mapping(address => uint256) internal maxOwnedTokenIds;
     address internal factory;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -77,15 +76,6 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
         }
 
         IAccessPass(nftContract).mint(to, tokenIds);
-
-        // Update the last max tokenId
-        uint256 lastMax = maxOwnedTokenIds[nftContract];
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            if (tokenIds[i] > lastMax) {
-                lastMax = tokenIds[i];
-            }
-        }
-        maxOwnedTokenIds[nftContract] = lastMax;
     }
 
     function mint(
@@ -97,11 +87,10 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
             revert NonexistentCollection(name);
         }
 
-        uint256 autoIncrementId = maxOwnedTokenIds[nftContract] + 1;
+        uint256 autoIncrementId = IAccessPass(nftContract).maxOwnedTokenId() + 1;
         uint256[] memory tokenIds = new uint256[](1);
         tokenIds[0] = autoIncrementId;
         IAccessPass(nftContract).mint(to, tokenIds);
-        maxOwnedTokenIds[nftContract] = autoIncrementId;
     }
 
     function getCollectionAddress(string memory name) public view override returns (address) {

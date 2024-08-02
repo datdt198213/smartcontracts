@@ -16,6 +16,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     bool public frozen = false;
     bool private _proxyApproved;
     mapping(uint256 => bool) private _lockedTokens;
+    uint256 private _maxOwnedTokenId;
 
     constructor(string memory name, string memory symbol, address admin, address endpoint, address[] memory proxies)
         Ownable(admin)
@@ -39,8 +40,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
 
     modifier onlyOwnerOrOperator() {
         require(
-            hasRole(OPERATOR_ROLE, msg.sender) || msg.sender == owner(),
-            "Call by owner or operator only"
+            hasRole(OPERATOR_ROLE, msg.sender) || msg.sender == owner()
         );
         _;
     }
@@ -82,11 +82,17 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     {
         require(tokenIds.length > 0);
 
+        uint256 lastMax = _maxOwnedTokenId;
         for(uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(tokenId > 0);
             _safeMint(to, tokenId);
+
+            if (tokenId > lastMax) {
+                lastMax = tokenId;
+            }
         }
+        _maxOwnedTokenId = lastMax;
     }
 
     function burn(uint256 tokenId) public {
@@ -132,6 +138,10 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     function approve(address to, uint256 tokenId) public virtual override {
         require(!isLocked(tokenId));
         super.approve(to, tokenId);
+    }
+
+    function maxOwnedTokenId() public view returns (uint256) {
+        return _maxOwnedTokenId;
     }
 
     function supportsInterface(bytes4 interfaceId)

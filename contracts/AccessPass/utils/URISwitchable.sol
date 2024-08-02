@@ -17,7 +17,7 @@ abstract contract URISwitchable is IURISwitchable {
         virtual
         override
     {
-        require(_hasLength(baseURL), "Need a valid URL");
+        require(_hasLength(baseURL));
 
         _originalBaseURI = baseURL;
     }
@@ -27,7 +27,7 @@ abstract contract URISwitchable is IURISwitchable {
         virtual
         override
     {
-        require(_hasLength(baseURL), "Need a valid URL");
+        require(_hasLength(baseURL));
 
         _displayBaseURI = baseURL;
     }
