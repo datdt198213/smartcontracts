@@ -14,7 +14,8 @@ describe("VestingWalletCliffUpgradeable", function () {
         nonOperator: Signer,
         beneficiary: Signer,
         gateway: Signer,
-        router: Signer;
+        router: Signer,
+        beaconOwner: Signer;
     let startTimestamp: BigInt,
         cliffSeconds: BigInt,
         durationSeconds: BigInt,
@@ -29,12 +30,41 @@ describe("VestingWalletCliffUpgradeable", function () {
         vaultAddress: string;
 
     beforeEach(async () => {
-        [owner, operator, nonOperator, beneficiary, gateway, router] =
+        [owner, operator, nonOperator, beneficiary, gateway, router, beaconOwner] =
             await hre.ethers.getSigners();
 
         vestingWalletCliffContract = await hre.ethers.getContractFactory(
             "VestingWalletCliffUpgradeable"
         );
+
+        midnightSocietyContract = await hre.ethers.getContractFactory(
+            `MidnightSociety`
+        );
+
+        midnightSociety = await hre.upgrades.deployProxy(
+            midnightSocietyContract,
+            [
+                [await operator.getAddress()],
+                await gateway.getAddress(),
+                await router.getAddress(),
+            ],
+            { initializer: "initialize", kind: "uups" }
+        );
+
+        vestingWalletFactoryContract = await hre.ethers.getContractFactory(
+            `VestingWalletFactory`
+        );
+
+        vestingWalletFactory = await hre.upgrades.deployProxy(
+            vestingWalletFactoryContract,
+            [await midnightSociety.getAddress(), await beaconOwner.getAddress()],
+            { initializer: "initialize", kind: "uups" }
+        );
+        await midnightSociety
+            .connect(owner)
+            .setVaultFactory(await vestingWalletFactory.getAddress());
+
+        amount = 100000n;
 
         startTimestamp = BigInt(parseInt(((new Date()).getTime() / 1000).toString()))
         cliffSeconds = 400n;
@@ -52,115 +82,36 @@ describe("VestingWalletCliffUpgradeable", function () {
         it(`Can not deploy if cliff > duration`, async function () {
             cliffSeconds = 120n; // 2 minute
             durationSeconds = 60n; // 1 minute
+            
+            await expect(createVault(
+                await beneficiary.getAddress(),
+                startTimestamp,
+                cliffSeconds,
+                durationSeconds,
+                await operator.getAddress(),
+                revocable,
+                amount
+            )).revertedWithCustomError(vestingWalletCliffContract, 'InvalidCliffDuration');
 
-            await expect(
-                hre.upgrades.deployProxy(
-                    vestingWalletCliffContract,
-                    [
-                        await beneficiary.getAddress(),
-                        startTimestamp,
-                        cliffSeconds,
-                        durationSeconds,
-                        await operator.getAddress(),
-                        revocable,
-                    ],
-                    { initializer: "initialize", kind: "uups" }
-                )
-            ).to.be.revertedWithCustomError(
-                vestingWalletCliffContract,
-                `InvalidCliffDuration`
-            );
         });
 
         it(`Can deploy if cliff < duration`, async function () {
             cliffSeconds = 60n; // 1 minute
             durationSeconds = 120n; // 2 minute
-            await expect(
-                await hre.upgrades.deployProxy(
-                    vestingWalletCliffContract,
-                    [
-                        await beneficiary.getAddress(),
-                        startTimestamp,
-                        cliffSeconds,
-                        durationSeconds,
-                        await operator.getAddress(),
-                        revocable,
-                    ],
-                    { initializer: "initialize", kind: "uups" }
-                )
-            ).not.to.be.reverted;
-        });
-    });
-
-    async function createVault(
-        beneficiary: string,
-        startTimestamp: BigInt,
-        cliffSeconds: BigInt,
-        durationSeconds: BigInt,
-        operatorAddress: string,
-        revocable: boolean,
-        amount: BigInt
-    ) {
-        const txMidnight = await midnightSociety
-            .connect(operator)
-            .mintLockup(
-                beneficiary,
+            await expect(createVault(
+                await beneficiary.getAddress(),
                 startTimestamp,
                 cliffSeconds,
                 durationSeconds,
-                operatorAddress,
+                await operator.getAddress(),
                 revocable,
                 amount
-            );
-
-        const iface = new ethers.Interface([
-            `event MintLockUp(address indexed vaultAddress, address indexed beneficiary, uint64 start, uint64 cliff, uint64 duration, address operator, bool revocable, uint256 amount)`,
-        ]);
-
-        const recept = await txMidnight.wait();
-        for (const log of recept.logs) {
-            const mLog = iface.parseLog(log);
-            if (mLog && mLog.name === `MintLockUp`) vaultAddress = mLog.args[0];
-        }
-
-        const vestingWalletCliff: Contract =
-            await vestingWalletCliffContract.attach(vaultAddress);
-
-        return vestingWalletCliff;
-    }
+            )).not.to.be.reverted;
+        });
+    });
 
     describe(`release(address)`, async function () {
         beforeEach(async () => {
-            midnightSocietyContract = await hre.ethers.getContractFactory(
-                `MidnightSociety`
-            );
-
-            midnightSociety = await hre.upgrades.deployProxy(
-                midnightSocietyContract,
-                [
-                    [await operator.getAddress()],
-                    await gateway.getAddress(),
-                    await router.getAddress(),
-                ],
-                { initializer: "initialize", kind: "uups" }
-            );
-
-            vestingWalletFactoryContract = await hre.ethers.getContractFactory(
-                `VestingWalletFactory`
-            );
-
-            vestingWalletFactory = await hre.upgrades.deployProxy(
-                vestingWalletFactoryContract,
-                [await midnightSociety.getAddress()],
-                { initializer: "initialize", kind: "uups" }
-            );
-            await midnightSociety
-                .connect(owner)
-                .setVaultFactory(await vestingWalletFactory.getAddress());
-
-            amount = 100000n;
-
-
         });
 
         it(`Should receipt 0 tokens if calling before the end of the cliff period`, async function () {
@@ -683,4 +634,42 @@ describe("VestingWalletCliffUpgradeable", function () {
             expect(released).to.be.equal(0);
         });
     });
+    
+    async function createVault(
+        beneficiary: string,
+        startTimestamp: BigInt,
+        cliffSeconds: BigInt,
+        durationSeconds: BigInt,
+        operatorAddress: string,
+        revocable: boolean,
+        amount: BigInt
+    ) {
+        const txMidnight = await midnightSociety
+            .connect(operator)
+            .mintLockup(
+                beneficiary,
+                startTimestamp,
+                cliffSeconds,
+                durationSeconds,
+                operatorAddress,
+                revocable,
+                amount
+            );
+
+        const iface = new ethers.Interface([
+            `event MintLockUp(address indexed vaultAddress, address indexed beneficiary, uint64 start, uint64 cliff, uint64 duration, address operator, bool revocable, uint256 amount)`,
+        ]);
+
+        const recept = await txMidnight.wait();
+        for (const log of recept.logs) {
+            const mLog = iface.parseLog(log);
+            if (mLog && mLog.name === `MintLockUp`) vaultAddress = mLog.args[0];
+        }
+
+        const vestingWalletCliff: Contract =
+            await vestingWalletCliffContract.attach(vaultAddress);
+
+        return vestingWalletCliff;
+    }
+
 });

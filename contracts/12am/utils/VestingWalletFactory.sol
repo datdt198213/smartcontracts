@@ -6,7 +6,8 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 import {VestingWalletCliffUpgradeable} from "./VestingWalletCliffUpgradeable.sol";
 import {IVestingWalletFactory} from "../interfaces/IVestingWalletFactory.sol";
@@ -14,6 +15,7 @@ import {IVestingWalletFactory} from "../interfaces/IVestingWalletFactory.sol";
 contract VestingWalletFactory is Initializable, ContextUpgradeable, OwnableUpgradeable, UUPSUpgradeable, IVestingWalletFactory {
 
     address public token;
+    address public beacon;
 
     modifier onlyTokenContract() {
         require(msg.sender == token, "INVALID_SENDER");
@@ -25,12 +27,16 @@ contract VestingWalletFactory is Initializable, ContextUpgradeable, OwnableUpgra
         _disableInitializers();
     }
 
-    function initialize(address _token) public initializer {
+    function initialize(address _token, address _beaconOwner) public initializer {
         require(_token != address(0));
 
         __Ownable_init(msg.sender);
 
         token = _token;
+
+        VestingWalletCliffUpgradeable _vaultImpl = new VestingWalletCliffUpgradeable();
+        UpgradeableBeacon _beacon = new UpgradeableBeacon(address(_vaultImpl), _beaconOwner);
+        beacon = address(_beacon);
     }
 
     function createVault(
@@ -41,8 +47,8 @@ contract VestingWalletFactory is Initializable, ContextUpgradeable, OwnableUpgra
         address operator,
         bool revocable
     ) public onlyTokenContract override returns (address) {
-        VestingWalletCliffUpgradeable vaultImpl = new VestingWalletCliffUpgradeable();
-        ERC1967Proxy vaultProxy = new ERC1967Proxy(address(vaultImpl), abi.encodeWithSelector(VestingWalletCliffUpgradeable.initialize.selector, beneficiary, start, cliff, duration, operator, revocable));
+        BeaconProxy vaultProxy = new BeaconProxy(beacon, abi.encodeWithSelector(VestingWalletCliffUpgradeable.initialize.selector, beneficiary, start, cliff, duration, operator, revocable));
+
         return address(vaultProxy);
     }
 

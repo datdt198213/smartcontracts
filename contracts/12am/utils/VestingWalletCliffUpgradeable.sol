@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import {VestingWalletUpgradeable} from "./VestingWalletUpgradeable.sol";
 
@@ -11,7 +10,7 @@ import {VestingWalletUpgradeable} from "./VestingWalletUpgradeable.sol";
 /**
  * @dev Extension of {VestingWallet} that adds a cliff to the vesting schedule.
  */
-contract VestingWalletCliffUpgradeable is Initializable, VestingWalletUpgradeable, UUPSUpgradeable {
+contract VestingWalletCliffUpgradeable is Initializable, VestingWalletUpgradeable {
     using SafeCast for *;
 
     /// @custom:storage-location erc7201:openzeppelin.storage.VestingWalletCliff
@@ -78,8 +77,5 @@ contract VestingWalletCliffUpgradeable is Initializable, VestingWalletUpgradeabl
         uint64 timestamp
     ) internal view virtual override returns (uint256) {
         return timestamp < cliff() ? 0 : super._vestingSchedule(totalAllocation, timestamp);
-    }
-
-    function _authorizeUpgrade(address newImplementation) internal onlyOwner override {
     }
 }

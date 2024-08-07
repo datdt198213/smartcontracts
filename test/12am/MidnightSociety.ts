@@ -34,7 +34,7 @@ describe("MidnightSociety", function () {
         );
         vestingWalletFactory = await hre.upgrades.deployProxy(
             vestingWalletFactoryContract,
-            [await midnightSociety.getAddress()],
+            [await midnightSociety.getAddress(), await owner.getAddress()],
             { initializer: "initialize", kind: "uups" }
         );
         await midnightSociety
@@ -226,13 +226,6 @@ describe("MidnightSociety", function () {
                 );
 
             const receipt = await tx.wait();
-            let vaultProxy;
-
-            const upgradedEvent = receipt.logs.find(
-                (log) => log.fragment && log.fragment.name === "Upgraded"
-            );
-            vaultProxy = upgradedEvent.address;
-
             const iface = new hre.ethers.Interface([
                 "event MintLockUp(address indexed vaultAddress, address indexed beneficiary, uint64 start, uint64 cliff, uint64 duration, address operator, bool revocable, uint256 amount)",
             ]);
@@ -246,7 +239,7 @@ describe("MidnightSociety", function () {
                 });
 
                 if (mLog && mLog.name === `MintLockUp`) {
-                    expect(mLog.args[0]).to.equal(vaultProxy);
+                    expect(mLog.args[0]).not.equal(ZeroAddress);
                     expect(mLog.args[1]).to.equal(
                         await beneficiary.getAddress()
                     );
