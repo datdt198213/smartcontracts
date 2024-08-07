@@ -122,23 +122,41 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
         IAccessPass(nftContract).unlock(tokenId);
     }
 
-    function addProxy(address proxy) public onlyRole(OPERATOR_ROLE) override {
-        _addProxyToSet(proxy);
+    function addProxy(address _proxy, address[] memory _collections) public onlyRole(OPERATOR_ROLE) override {
+        require(_collections.length > 0);
+        require(_proxy != address(0));
 
-        // Grant PROXY_ROLE to the new proxy in all collections
-        for (uint256 i = 0; i < collectionsList.length; i++) {
-            address nftContract = collectionsList[i];
-            IAccessControl(nftContract).grantRole(IAccessPass(nftContract).PROXY_ROLE(), proxy);
+        for (uint256 i = 0; i < _collections.length; i++) {
+            address nftContract = _collections[i];
+            IAccessControl(nftContract).grantRole(IAccessPass(nftContract).PROXY_ROLE(), _proxy);
         }
     }
 
-    function removeProxy(address proxy) public onlyRole(OPERATOR_ROLE) override {
-        _removeProxyFromSet(proxy);
+    function addToSet(address[] memory _proxies) public onlyRole(OPERATOR_ROLE) override {
+        require(_proxies.length > 0);
 
-        // Revoke PROXY_ROLE from this proxy in all collections
-        for (uint256 i = 0; i < collectionsList.length; i++) {
-            address nftContract = collectionsList[i];
-            IAccessControl(nftContract).revokeRole(IAccessPass(nftContract).PROXY_ROLE(), proxy);
+        for (uint256 i = 0; i < _proxies.length; i++) {
+            require(_proxies[i] != address(0));
+            _addProxyToSet(_proxies[i]);
+        }
+    }
+
+    function removeProxy(address _proxy, address[] memory _collections) public onlyRole(OPERATOR_ROLE) override {
+        require(_collections.length > 0);
+        require(_proxy != address(0));
+
+        for (uint256 i = 0; i < _collections.length; i++) {
+            address nftContract = _collections[i];
+            IAccessControl(nftContract).revokeRole(IAccessPass(nftContract).PROXY_ROLE(), _proxy);
+        }
+    }
+
+    function removeFromSet(address[] memory _proxies) public onlyRole(OPERATOR_ROLE) override {
+        require(_proxies.length > 0);
+
+        for (uint256 i = 0; i < _proxies.length; i++) {
+            require(_proxies[i] != address(0));
+            _removeProxyFromSet(_proxies[i]);
         }
     }
 

@@ -29,7 +29,8 @@ describe("AccessPassEndpoint", function () {
         symbol2: string,
         dataPath2: string;
 
-    const adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000" 
+    const proxyRole = "0x77d72916e966418e6dc58a19999ae9934bef3f749f1547cde0a86e809f19c89b";
+    const adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
     beforeEach(async () => {
         [owner, operator, proxy, nonOwner, nonOperator, newProxy, receiver, admin] =
@@ -415,16 +416,24 @@ describe("AccessPassEndpoint", function () {
         });
     });
 
-    describe("addProxy(address)", function () {
+    describe("addProxy(address, address[])", function () {
+        var collection1: string;
+        var collection2: string;
         this.beforeEach(async function () {
-            await endpoint.setFactory(await factory.getAddress());
+            await endpoint.connect(owner).setFactory(await factory.getAddress());
+
+            await endpoint.connect(operator).createCollection(name1, symbol1, dataPath1, await admin.getAddress());
+            collection1 = await endpoint.connect(operator).getCollectionAddress(name1);
+
+            await endpoint.connect(operator).createCollection(name2, symbol2, dataPath2, await admin.getAddress());
+            collection2 = await endpoint.connect(operator).getCollectionAddress(name2);
         });
 
         it("Non-operator can not execute", async function () {
             await expect(
                 endpoint
                     .connect(nonOperator)
-                    .addProxy(await receiver.getAddress())
+                    .addProxy(await newProxy.getAddress(), [collection1, collection2])
             ).to.be.revertedWithCustomError(
                 endpoint,
                 `AccessControlUnauthorizedAccount`
@@ -433,61 +442,73 @@ describe("AccessPassEndpoint", function () {
 
         it("Operator can execute", async function () {
             await expect(
-                endpoint.connect(operator).addProxy(await newProxy.getAddress())
+                endpoint.connect(operator).addProxy(await newProxy.getAddress(), [collection1, collection2])
             ).not.to.be.reverted;
         });
 
-        it("Proxies list of all collections should be updated", async function () {
-            const tx = await endpoint
-                .connect(operator)
-                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
-            const receipt = await tx.wait();
-            const nftContract = await endpoint.getCollectionAddress(name1);
+        it("Should fail with a zero proxy address", async function () {
+            await expect(
+                endpoint.connect(operator).addProxy(ZeroAddress, [collection1, collection2])
+            ).to.be.reverted;
+        });
 
-            const tx2 = await endpoint
-                .connect(operator)
-                .createCollection(name2, symbol2, dataPath2, await admin.getAddress());
-            const receipt2 = await tx2.wait();
-            const nftContract2 = await endpoint
-                .connect(operator)
-                .getCollectionAddress(name2);
+        it("Should fail with any zero collection address", async function () {
+            await expect(
+                endpoint.connect(operator).addProxy(await newProxy.getAddress(), [collection1, ZeroAddress])
+            ).to.be.reverted;
+            await expect(
+                endpoint.connect(operator).addProxy(await newProxy.getAddress(), [ZeroAddress, collection2])
+            ).to.be.reverted;
+        });
 
-            await expect(endpoint.connect(operator).addProxy(nonOperator)).not
+        it("Should fail with any empty collections list", async function () {
+            await expect(
+                endpoint.connect(operator).addProxy(await newProxy.getAddress(), [])
+            ).to.be.reverted;
+        });
+
+        it("Proxies list of specified collections should be updated", async function () {
+            await expect(endpoint.connect(operator).addProxy(await newProxy.getAddress(), [collection1, collection2])).not
                 .to.be.reverted;
 
-            const accessPassContract = await hre.ethers.getContractFactory(
-                "AccessPass"
-            );
-            const accessPass1 = accessPassContract.attach(nftContract);
-            const accessPass2 = accessPassContract.attach(nftContract2);
+            const iface = new ethers.Interface(['function hasRole(bytes32 role, address account) external view returns (bool)']);
+            const accessPass1 = new ethers.Contract(collection1, iface, newProxy);
+            const accessPass2 = new ethers.Contract(collection2, iface, newProxy);
 
-            const PROXY_ROLE_HASH = accessPass1.PROXY_ROLE();
-
-            await expect(
+            expect(
                 await accessPass1.hasRole(
-                    PROXY_ROLE_HASH,
-                    await nonOperator.getAddress()
+                    proxyRole,
+                    await newProxy.getAddress()
                 )
             ).to.equal(true);
-            await expect(
+            expect(
                 await accessPass2.hasRole(
-                    PROXY_ROLE_HASH,
-                    await nonOperator.getAddress()
+                    proxyRole,
+                    await newProxy.getAddress()
                 )
             ).to.equal(true);
         });
     });
 
-    describe("remove(address)", function () {
+    describe("removeProxy(address, address[])", function () {
+        var collection1: string, collection2: string;
         this.beforeEach(async function () {
-            await endpoint.setFactory(await factory.getAddress());
+            await endpoint.connect(owner).setFactory(await factory.getAddress());
+
+            await endpoint.connect(operator).createCollection(name1, symbol1, dataPath1, await admin.getAddress());
+            collection1 = await endpoint.connect(operator) .getCollectionAddress(name1);
+
+            await endpoint.connect(operator).createCollection(name2, symbol2, dataPath2, await admin.getAddress());
+            collection2 = await endpoint.connect(operator).getCollectionAddress(name2);
+
+            await endpoint.connect(operator).addProxy(await newProxy.getAddress(), [collection1, collection2]);
         });
 
         it("Non-operator can not execute", async function () {
             await expect(
                 endpoint
                     .connect(nonOperator)
-                    .removeProxy(await newProxy.getAddress())
+                    .removeProxy(await newProxy.getAddress(), [collection1, collection2])
             ).to.be.revertedWithCustomError(
                 endpoint,
                 `AccessControlUnauthorizedAccount`
@@ -495,82 +516,48 @@ describe("AccessPassEndpoint", function () {
         });
 
         it("Operator can execute", async function () {
-            await expect(endpoint.connect(operator).addProxy(await newProxy))
-                .not.to.be.reverted;
-
             await expect(
                 endpoint
                     .connect(operator)
-                    .removeProxy(await newProxy.getAddress())
+                    .removeProxy(await newProxy.getAddress(), [collection1, collection2])
             ).not.to.be.reverted;
         });
 
-        it("Proxies list in all collections should be updated", async function () {
-            const tx = await endpoint
-                .connect(operator)
-                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
-            const receipt = await tx.wait();
-            const nftContract = await endpoint.getCollectionAddress(name1);
-
-            const iface = new hre.ethers.Interface([
-                "event CollectionCreated(string indexed name, string indexed symbol, address indexed contractAddress)",
-            ]);
-
-            for (const log of receipt.logs) {
-                const mLog = iface.parseLog(log);
-                if (mLog && mLog.name === `CollectionCreated`) {
-                    const { name, symbol, contractAddress } = mLog.args;
-                    expect(name.hash).to.equal(
-                        hre.ethers.keccak256(hre.ethers.toUtf8Bytes(name1))
-                    );
-                    expect(symbol.hash).to.equal(
-                        hre.ethers.keccak256(hre.ethers.toUtf8Bytes(symbol1))
-                    );
-                    expect(contractAddress).to.equal(nftContract);
-                }
-            }
-
-            const tx2 = await endpoint
-                .connect(operator)
-                .createCollection(name2, symbol2, dataPath2, await admin.getAddress());
-            const receipt2 = await tx2.wait();
-            const nftContract2 = await endpoint.getCollectionAddress(name2);
-
-            for (const log of receipt2.logs) {
-                const mLog = iface.parseLog(log);
-                if (mLog && mLog.name === `CollectionCreated`) {
-                    const { name, symbol, contractAddress } = mLog.args;
-                    expect(name.hash).to.equal(
-                        hre.ethers.keccak256(hre.ethers.toUtf8Bytes(name2))
-                    );
-                    expect(symbol.hash).to.equal(
-                        hre.ethers.keccak256(hre.ethers.toUtf8Bytes(symbol2))
-                    );
-                    expect(contractAddress).to.equal(nftContract2);
-                }
-            }
-
+        it("Should fail with a zero proxy address", async function () {
             await expect(
-                endpoint.connect(operator).addProxy(await newProxy.getAddress())
-            ).not.to.be.reverted;
+                endpoint.connect(operator).removeProxy(ZeroAddress, [collection1, collection2])
+            ).to.be.reverted;
+        });
 
-            const accessPassContract = await hre.ethers.getContractFactory(
-                "AccessPass"
-            );
-            const accessPass1 = accessPassContract.attach(nftContract);
-            const accessPass2 = accessPassContract.attach(nftContract2);
+        it("Should fail with any zero collection address", async function () {
+            await expect(
+                endpoint.connect(operator).removeProxy(await newProxy.getAddress(), [collection1, ZeroAddress])
+            ).to.be.reverted;
+            await expect(
+                endpoint.connect(operator).removeProxy(await newProxy.getAddress(), [ZeroAddress, collection2])
+            ).to.be.reverted;
+        });
 
-            const PROXY_ROLE_HASH = accessPass1.PROXY_ROLE();
+        it("Should fail with any empty collections list", async function () {
+            await expect(
+                endpoint.connect(operator).removeProxy(await newProxy.getAddress(), [])
+            ).to.be.reverted;
+        });
+
+        it("Proxies list of specified collections should be updated", async function () {
+            const iface = new ethers.Interface(['function hasRole(bytes32 role, address account) external view returns (bool)']);
+            const accessPass1 = new ethers.Contract(collection1, iface, newProxy);
+            const accessPass2 = new ethers.Contract(collection2, iface, newProxy);
 
             expect(
                 await accessPass1.hasRole(
-                    PROXY_ROLE_HASH,
+                    proxyRole,
                     await newProxy.getAddress()
                 )
             ).to.equal(true);
             expect(
                 await accessPass2.hasRole(
-                    PROXY_ROLE_HASH,
+                    proxyRole,
                     await newProxy.getAddress()
                 )
             ).to.equal(true);
@@ -578,20 +565,150 @@ describe("AccessPassEndpoint", function () {
             await expect(
                 endpoint
                     .connect(operator)
-                    .removeProxy(await newProxy.getAddress())
+                    .removeProxy(await newProxy.getAddress(), [collection1, collection2])
             ).not.to.be.reverted;
             expect(
                 await accessPass1.hasRole(
-                    PROXY_ROLE_HASH,
+                    proxyRole,
                     await newProxy.getAddress()
                 )
             ).to.equal(false);
             expect(
                 await accessPass2.hasRole(
-                    PROXY_ROLE_HASH,
+                    proxyRole,
                     await newProxy.getAddress()
                 )
             ).to.equal(false);
         });
     });
+
+    describe('addToSet(address[])', function () {
+        this.beforeEach(async function () {
+            await endpoint
+                .connect(owner)
+                .setFactory(await factory.getAddress());
+        });
+
+        it("Operator can execute", async function () {
+            await expect(endpoint.connect(operator).addToSet([await newProxy.getAddress()])).not.to.be.reverted;
+        });
+
+        it("Non-operator cannot execute", async function () {
+            await expect(
+                endpoint
+                    .connect(nonOperator)
+                    .addToSet([await newProxy.getAddress()])
+            ).to.be.revertedWithCustomError(
+                endpoint,
+                `AccessControlUnauthorizedAccount`
+            );
+        });
+
+        it("Can't add a null address as proxy", async function () {
+            await expect(
+                endpoint
+                    .connect(operator)
+                    .addToSet([ZeroAddress])
+            ).to.be.reverted;
+        });
+
+        it("Should fail with any empty list", async function () {
+            await expect(
+                endpoint.connect(operator).addToSet([])
+            ).to.be.reverted;
+        });
+
+        it("Can't add an existed proxy to set", async function () {
+            await expect(endpoint.connect(operator).addToSet([await newProxy.getAddress()])).not.to.be.reverted;
+
+            await expect(
+                endpoint
+                    .connect(operator)
+                    .addToSet([await newProxy.getAddress()])
+            ).to.be.revertedWithCustomError(endpoint, "ProxyExist");
+        });
+
+        it('Added item should have a proxy role in any new collection', async function () {
+            await expect(endpoint.connect(operator).addToSet([await newProxy.getAddress()])).not.reverted;
+
+            await expect(endpoint.connect(operator).createCollection(name1, symbol1, dataPath1, await admin.getAddress())).not.reverted;
+            await expect(endpoint.connect(operator).createCollection(name2, symbol2, dataPath2, await admin.getAddress())).not.reverted;
+            const collection1 = await endpoint.connect(operator).getCollectionAddress(name1);
+            const collection2 = await endpoint.connect(operator).getCollectionAddress(name2);
+
+            const iface = new ethers.Interface(['function hasRole(bytes32 role, address account) external view returns (bool)'])
+            const accessPass1 = new ethers.Contract(collection1, iface, newProxy);
+            const accessPass2 = new ethers.Contract(collection2, iface, newProxy);
+
+            expect(await accessPass1.connect(newProxy).hasRole(proxyRole, await newProxy.getAddress())).equal(true);
+            expect(await accessPass2.connect(newProxy).hasRole(proxyRole, await newProxy.getAddress())).equal(true);
+        });
+    })
+
+    describe('removeFromSet(address[])', function () {
+        this.beforeEach(async function () {
+            await endpoint.connect(owner).setFactory(await factory.getAddress());
+            await endpoint.connect(operator).addToSet([await newProxy.getAddress()]);
+        })
+
+        it("Operator can execute", async function () {
+            await expect(endpoint.connect(operator).removeFromSet([await newProxy.getAddress()])).not.to.be.reverted;
+        });
+
+        it("Non-operator cannot execute", async function () {
+            await expect(
+                endpoint
+                    .connect(nonOperator)
+                    .removeFromSet([await newProxy.getAddress()])
+            ).to.be.revertedWithCustomError(
+                endpoint,
+                `AccessControlUnauthorizedAccount`
+            );
+        });
+
+        it("Should fail with any empty list", async function () {
+            await expect(
+                endpoint.connect(operator).removeFromSet([])
+            ).to.be.reverted;
+        });
+
+        it("Should fail with any zero address", async function () {
+            await expect(
+                endpoint.connect(operator).removeFromSet([ZeroAddress])
+            ).to.be.reverted;
+            await expect(
+                endpoint.connect(operator).removeFromSet([await newProxy.getAddress(), ZeroAddress])
+            ).to.be.reverted;
+            await expect(
+                endpoint.connect(operator).removeFromSet([ZeroAddress, await newProxy.getAddress()])
+            ).to.be.reverted;
+        });
+
+        it("Can't remove a non-existent item", async function () {
+            await expect(endpoint.connect(operator).removeFromSet([await newProxy.getAddress()])).not.to.be.reverted;
+
+            await expect(
+                endpoint
+                    .connect(operator)
+                    .removeFromSet([await newProxy.getAddress()])
+            ).to.be.revertedWithCustomError(endpoint, "NonexistentProxy");
+        })
+
+        it('Removed item should not have a proxy role in any new collection', async function () {
+            const iface = new ethers.Interface(['function hasRole(bytes32 role, address account) external view returns (bool)']);
+            await expect(endpoint.connect(operator).createCollection(name1, symbol1, dataPath1, await admin.getAddress())).not.reverted;
+            const collection1 = await endpoint.connect(operator).getCollectionAddress(name1);
+            const accessPass1 = new ethers.Contract(collection1, iface, newProxy);
+
+            expect(await accessPass1.connect(newProxy).hasRole(proxyRole, await newProxy.getAddress())).equal(true);
+
+            await expect(endpoint.connect(operator).removeFromSet([await newProxy.getAddress()])).not.reverted
+
+            await expect(endpoint.connect(operator).createCollection(name2, symbol2, dataPath2, await admin.getAddress())).not.reverted;
+            const collection2 = await endpoint.connect(operator).getCollectionAddress(name2);
+            const accessPass2 = new ethers.Contract(collection2, iface, newProxy);
+
+            expect(await accessPass2.connect(newProxy).hasRole(proxyRole, await newProxy.getAddress())).equal(false);
+        })
+    })
 });

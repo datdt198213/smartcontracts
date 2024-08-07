@@ -45,7 +45,11 @@ interface IAccessPassEndpoint {
         uint256 tokenId
     ) external;
 
-    function addProxy(address proxy) external;
+    function addProxy(address proxy, address[] memory collections) external;
 
-    function removeProxy(address proxy) external;
+    function addToSet(address[] memory proxies) external;
+
+    function removeProxy(address proxy, address[] memory collections) external;
+
+    function removeFromSet(address[] memory proxies) external;
 }
