@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.20;
 
-interface IL1OrbitCustomGateway {
+interface IL1CustomGateway {
     function registerTokenToL2(
         address _l2Address,
         uint256 _maxGas,

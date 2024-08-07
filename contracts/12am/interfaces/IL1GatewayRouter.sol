@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.20;
 
-interface IOrbitGatewayRouter {
+interface IL1GatewayRouter {
     function setGateway(
         address _gateway,
         uint256 _maxGas,

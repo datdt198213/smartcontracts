@@ -8,8 +8,8 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {ERC20CappedUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-import {IL1OrbitCustomGateway} from "./interfaces/IL1OrbitCustomGateway.sol";
-import {IOrbitGatewayRouter} from "./interfaces/IOrbitGatewayRouter.sol";
+import {IL1CustomGateway} from "./interfaces/IL1CustomGateway.sol";
+import {IL1GatewayRouter} from "./interfaces/IL1GatewayRouter.sol";
 import {IVestingWalletFactory} from "./interfaces/IVestingWalletFactory.sol";
 
 contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgradeable, PausableUpgradeable, ERC20CappedUpgradeable, UUPSUpgradeable {
@@ -112,7 +112,7 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
         bool prev = shouldRegisterGateway;
         shouldRegisterGateway = true;
 
-        IL1OrbitCustomGateway(gateway).registerTokenToL2{ value: valueForGateway }(
+        IL1CustomGateway(gateway).registerTokenToL2{ value: valueForGateway }(
             l2CustomTokenAddress,
             maxGasForCustomGateway,
             gasPriceBid,
@@ -120,7 +120,7 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
             creditBackAddress
         );
 
-        IOrbitGatewayRouter(router).setGateway{ value: valueForRouter }(
+        IL1GatewayRouter(router).setGateway{ value: valueForRouter }(
             gateway,
             maxGasForRouter,
             gasPriceBid,
