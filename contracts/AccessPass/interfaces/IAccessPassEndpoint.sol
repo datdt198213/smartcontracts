@@ -16,7 +16,8 @@ interface IAccessPassEndpoint {
     function createCollection(
         string memory name,
         string memory symbol,
-        string memory dataPath
+        string memory dataPath,
+        address admin
     ) external;
 
     function getCollectionAddress(

@@ -52,17 +52,19 @@ contract AccessPassEndpoint is Initializable, ContextUpgradeable, AccessControlU
     function createCollection(
         string memory name,
         string memory symbol,
-        string memory dataPath
+        string memory dataPath,
+        address admin
     ) external onlyRole(OPERATOR_ROLE) override {
         require(bytes(name).length > 0);
         require(bytes(symbol).length > 0);
         require(bytes(dataPath).length > 0);
+        require(admin != address(0));
 
         if (getCollectionAddress(name) != address(0)) {
             revert CollectionExist(name);
         }
 
-        address nftContract = IAccessPassFactory(factory).create(name, symbol, owner(), _getProxies());
+        address nftContract = IAccessPassFactory(factory).create(name, symbol, admin, _getProxies());
         IAccessPass(nftContract).setBaseDisplayURL(dataPath);
         collections[name] = nftContract;
         collectionsList.push(nftContract);

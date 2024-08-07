@@ -13,7 +13,8 @@ describe("AccessPassEndpoint", function () {
         nonOwner: Signer,
         nonOperator: Signer,
         newProxy: Signer,
-        receiver: Signer;
+        receiver: Signer,
+        admin: Signer;
     let endpoint: Contract,
         endpointMint: Contract,
         endpointMintAutoIncre: Contract,
@@ -28,8 +29,10 @@ describe("AccessPassEndpoint", function () {
         symbol2: string,
         dataPath2: string;
 
+    const adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000" 
+
     beforeEach(async () => {
-        [owner, operator, proxy, nonOwner, nonOperator, newProxy, receiver] =
+        [owner, operator, proxy, nonOwner, nonOperator, newProxy, receiver, admin] =
             await hre.ethers.getSigners();
         endpointContract = await hre.ethers.getContractFactory(
             "AccessPassEndpoint"
@@ -113,12 +116,12 @@ describe("AccessPassEndpoint", function () {
             await expect(
                 endpoint
                     .connect(operator)
-                    .createCollection(name1, symbol1, dataPath1)
+                    .createCollection(name1, symbol1, dataPath1, await admin.getAddress())
             ).to.be.revertedWithoutReason;  
         });
     });
 
-    describe("createCollection(string, string, string)", function () {
+    describe("createCollection(string, string, string, address)", function () {
         this.beforeEach(async function () {
             await endpoint
                 .connect(owner)
@@ -129,7 +132,7 @@ describe("AccessPassEndpoint", function () {
             await expect(
                 endpoint
                     .connect(operator)
-                    .createCollection(name1, symbol1, dataPath1)
+                    .createCollection(name1, symbol1, dataPath1, await admin.getAddress())
             ).not.to.be.reverted;
         });
 
@@ -137,7 +140,7 @@ describe("AccessPassEndpoint", function () {
             await expect(
                 endpoint
                     .connect(nonOperator)
-                    .createCollection(name1, symbol1, dataPath1)
+                    .createCollection(name1, symbol1, dataPath1, await admin.getAddress())
             ).to.be.revertedWithCustomError(
                 endpoint,
                 `AccessControlUnauthorizedAccount`
@@ -147,7 +150,7 @@ describe("AccessPassEndpoint", function () {
         it("Should emit a CollectionCreated event", async function () {
             const tx = await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
             const receipt = await tx.wait();
             const nftAddress = await endpoint
                 .connect(operator)
@@ -181,14 +184,30 @@ describe("AccessPassEndpoint", function () {
         it("Creating a duplicated collection should fail", async function () {
             await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
 
             await expect(
                 endpoint
                     .connect(operator)
-                    .createCollection(name1, symbol1, dataPath1)
+                    .createCollection(name1, symbol1, dataPath1, await admin.getAddress())
             ).to.be.revertedWithCustomError(endpoint, `CollectionExist`);
         });
+
+        it('Admin should has an admin role and be the owner of the newly created collection', async function () {
+            await endpoint
+                .connect(operator)
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
+
+            const collectionAddr = await endpoint.connect(operator).getCollectionAddress(name1);
+            const iface = new ethers.Interface([
+                'function hasRole(bytes32 role, address account) external view returns (bool)',
+                'function owner() public view returns (address)'
+            ])
+            const accessPass = new ethers.Contract(collectionAddr, iface, admin);
+
+            expect(await accessPass.connect(admin).hasRole(adminRole, await admin.getAddress())).equal(true)
+            expect(await accessPass.connect(admin).owner()).equal(await admin.getAddress())
+        })  
     });
 
     describe("mint(string, address, uint256[])", function () {
@@ -204,11 +223,11 @@ describe("AccessPassEndpoint", function () {
                 operator
             );
 
-            await endpoint.setFactory(await factory.getAddress());
+            await endpoint.connect(owner).setFactory(await factory.getAddress());
 
             await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
         });
 
         it("Using a non-existent collection should fail", async function () {
@@ -329,7 +348,7 @@ describe("AccessPassEndpoint", function () {
 
             await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
 
             const nftContract = await endpoint.getCollectionAddress(name1);
 
@@ -421,13 +440,13 @@ describe("AccessPassEndpoint", function () {
         it("Proxies list of all collections should be updated", async function () {
             const tx = await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
             const receipt = await tx.wait();
             const nftContract = await endpoint.getCollectionAddress(name1);
 
             const tx2 = await endpoint
                 .connect(operator)
-                .createCollection(name2, symbol2, dataPath2);
+                .createCollection(name2, symbol2, dataPath2, await admin.getAddress());
             const receipt2 = await tx2.wait();
             const nftContract2 = await endpoint
                 .connect(operator)
@@ -489,7 +508,7 @@ describe("AccessPassEndpoint", function () {
         it("Proxies list in all collections should be updated", async function () {
             const tx = await endpoint
                 .connect(operator)
-                .createCollection(name1, symbol1, dataPath1);
+                .createCollection(name1, symbol1, dataPath1, await admin.getAddress());
             const receipt = await tx.wait();
             const nftContract = await endpoint.getCollectionAddress(name1);
 
@@ -513,7 +532,7 @@ describe("AccessPassEndpoint", function () {
 
             const tx2 = await endpoint
                 .connect(operator)
-                .createCollection(name2, symbol2, dataPath2);
+                .createCollection(name2, symbol2, dataPath2, await admin.getAddress());
             const receipt2 = await tx2.wait();
             const nftContract2 = await endpoint.getCollectionAddress(name2);
 
