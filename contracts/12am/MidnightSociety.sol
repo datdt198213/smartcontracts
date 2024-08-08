@@ -69,7 +69,7 @@ contract MidnightSociety is Initializable, OwnableUpgradeable, AccessControlUpgr
         uint256 amount
     ) public onlyRole(OPERATOR_ROLE) {
         require(beneficiary != address(0) && operator != address(0));
-        require(start > 0 && cliff > 0 && duration > 0);
+        require(start > 0);
         require(amount > 0);
 
         address vaultProxy = IVestingWalletFactory(vaultFactory).createVault(beneficiary, start, cliff, duration, operator, revocable);
