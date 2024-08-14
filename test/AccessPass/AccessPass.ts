@@ -75,10 +75,12 @@ describe("AccessPass", function () {
 
     describe("freezeBaseOriginalURI()", async function () {
         it("Owner can freeze", async function () {
+            await accessPass.connect(admin).setBaseOriginalURL(baseURLOriginal);
             await expect(accessPass.connect(admin).freezeBaseOriginalURI()).not.to.be.reverted;
         });
 
         it("Non-owner can not freeze", async function () {
+            await accessPass.connect(admin).setBaseOriginalURL(baseURLOriginal);
             await expect(
                 accessPass.connect(nonAdmin).freezeBaseOriginalURI()
             ).to.be.revertedWithCustomError(
@@ -87,7 +89,14 @@ describe("AccessPass", function () {
             );
         });
 
+        it("Should fail if base original url is not set", async function () {
+            await expect(
+                accessPass.connect(admin).freezeBaseOriginalURI()
+            ).to.be.reverted;
+        });
+
         it("Freezing the base original URI should succeed", async function () {
+            await accessPass.connect(admin).setBaseOriginalURL(baseURLOriginal);
             await accessPass.connect(admin).freezeBaseOriginalURI();
             expect(await accessPass.connect(admin).frozen()).to.equal(true);
         });
@@ -133,6 +142,7 @@ describe("AccessPass", function () {
         });
 
         it(`Should fail when frozen`, async function () {
+            await accessPass.connect(admin).setBaseOriginalURL(baseURLOriginal);
             await accessPass.connect(admin).freezeBaseOriginalURI()
             await expect(accessPass.connect(admin).setBaseOriginalURL(baseURL)).to.be.revertedWithoutReason
         })

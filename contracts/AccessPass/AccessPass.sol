@@ -49,6 +49,8 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
 
     function freezeBaseOriginalURI() external onlyOwner
     {
+        require(_hasLength(_originalBaseURI));
+
         frozen = true;
     }
 

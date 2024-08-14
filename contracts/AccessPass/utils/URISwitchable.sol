@@ -9,8 +9,8 @@ abstract contract URISwitchable is IURISwitchable {
     using Strings for uint256;
 
     bool private _displayMode = true;
-    string private _originalBaseURI;
-    string private _displayBaseURI;
+    string internal _originalBaseURI;
+    string internal _displayBaseURI;
 
     function setBaseOriginalURL(string memory baseURL)
         public
