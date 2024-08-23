@@ -16,11 +16,11 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     string private constant NAME = "$Midnight";
     string private constant SYMBOL = "$1AM";
 
-    address public childGateway;
+    address public l2Gateway;
     address private _l1Address;
 
     modifier onlyChildGateway() {
-        require(msg.sender == childGateway, "NOT_GATEWAY");
+        require(msg.sender == l2Gateway, "NOT_GATEWAY");
         _;
     }
 
@@ -38,7 +38,7 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
             _grantRole(PROXY_ROLE, _proxies[i]);
         }
 
-        childGateway = _childGateway;
+        l2Gateway = _childGateway;
         _l1Address = _rootTokenAddress;
 
         __Ownable_init(msg.sender);
@@ -47,14 +47,14 @@ contract ChildToken is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     }
 
     /**
-     * @notice should increase token supply by amount, and should only be callable by the childGateway.
+     * @notice should increase token supply by amount, and should only be callable by the child gateway.
      */
     function bridgeMint(address account, uint256 amount) external override onlyChildGateway {
         _mint(account, amount);
     }
 
     /**
-     * @notice should decrease token supply by amount, and should only be callable by the childGateway.
+     * @notice should decrease token supply by amount, and should only be callable by the child gateway.
      */
     function bridgeBurn(address account, uint256 amount) external override onlyChildGateway {
         _burn(account, amount);
