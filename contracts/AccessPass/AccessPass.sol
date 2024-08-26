@@ -18,7 +18,6 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     mapping(uint256 => bool) private _lockedTokens;
     uint256 private _maxOwnedTokenId;
     uint256 private _totalSupply;
-    uint256 public constant maxSupply = 10000;
 
     constructor(string memory name, string memory symbol, address admin, address endpoint, address[] memory proxies)
         Ownable(admin)
@@ -88,7 +87,6 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         onlyOwnerOrOperator
     {
         require(tokenIds.length > 0);
-        require(_totalSupply + tokenIds.length <= maxSupply);
 
         uint256 lastMax = _maxOwnedTokenId;
         for(uint256 i = 0; i < tokenIds.length; i++) {
