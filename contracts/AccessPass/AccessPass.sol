@@ -17,6 +17,8 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     bool private _proxyApproved;
     mapping(uint256 => bool) private _lockedTokens;
     uint256 private _maxOwnedTokenId;
+    uint256 private _totalSupply;
+    uint256 public constant maxSupply = 10000;
 
     constructor(string memory name, string memory symbol, address admin, address endpoint, address[] memory proxies)
         Ownable(admin)
@@ -25,6 +27,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         require(endpoint != address(0));
 
         _proxyApproved = true;
+        _totalSupply = 0;
 
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
@@ -85,6 +88,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         onlyOwnerOrOperator
     {
         require(tokenIds.length > 0);
+        require(_totalSupply + tokenIds.length <= maxSupply);
 
         uint256 lastMax = _maxOwnedTokenId;
         for(uint256 i = 0; i < tokenIds.length; i++) {
@@ -96,12 +100,17 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
                 lastMax = tokenId;
             }
         }
+        _totalSupply += tokenIds.length;
         _maxOwnedTokenId = lastMax;
+    }
+
+    function totalSupply() public view virtual returns (uint256) {
+        return _totalSupply;
     }
 
     function burn(uint256 tokenId) public {
         require(_isAuthorized(_ownerOf(tokenId), _msgSender(), tokenId), "Caller is not owner nor approved");
-
+        _totalSupply -= 1;
         _burn(tokenId);
     }
 
