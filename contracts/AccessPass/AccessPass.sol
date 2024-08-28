@@ -17,6 +17,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     bool private _proxyApproved;
     mapping(uint256 => bool) private _lockedTokens;
     uint256 private _maxOwnedTokenId;
+    uint256 private _totalSupply;
 
     constructor(string memory name, string memory symbol, address admin, address endpoint, address[] memory proxies)
         Ownable(admin)
@@ -97,11 +98,17 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
             }
         }
         _maxOwnedTokenId = lastMax;
+        _totalSupply += tokenIds.length;
+    }
+
+    function totalSupply() public view virtual returns (uint256) {
+        return _totalSupply;
     }
 
     function burn(uint256 tokenId) public {
         require(_isAuthorized(_ownerOf(tokenId), _msgSender(), tokenId), "Caller is not owner nor approved");
 
+        _totalSupply -= 1;
         _burn(tokenId);
     }
 

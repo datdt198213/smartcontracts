@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Contract, Signer, ZeroAddress } from "ethers";
+import { Contract, Provider, Signer, ZeroAddress } from "ethers";
 import hre from "hardhat";
 import { AccessPass__factory } from "../../typechain-types";
 import { seaport } from "@opensea/seaport-js/lib/typechain-types";
@@ -21,6 +21,7 @@ describe("AccessPass", function () {
         receiver: Signer,
         proxy: Signer,
         nonApproval: Signer;
+    let provider: Provider;
 
     const baseURLDisplay = "https://midnight-studio.io/metadata/";
     const baseURLOriginal = "ipfs://abcxyz/";
@@ -48,6 +49,8 @@ describe("AccessPass", function () {
                 await endpoint.getAddress(),
                 [await proxy.getAddress()]
             );
+
+        provider = ethers.provider;
     });
 
     describe("Initialize successfully", async function () {
@@ -71,6 +74,10 @@ describe("AccessPass", function () {
                 await accessPass.connect(admin).hasRole(adminRole, admin)
             ).to.be.equal(true);
         });
+
+        it(`The total supply equals 0`, async function () {
+            expect(await accessPass.connect(admin).totalSupply()).equal(0);
+        })
     });
 
     describe("freezeBaseOriginalURI()", async function () {
@@ -698,6 +705,24 @@ describe("AccessPass", function () {
         it(`Should return false with every nfts which is never get locked`, async function () {
             const hasLock = await isLocked(accessPass, operator, tokenIds[0])
             expect(hasLock).to.be.equal(false)
+        })
+    })
+
+    describe(`totalSupply()`, async function () {
+        it('Should be increased when tokens are minted', async function () {
+            let tokenIds : Array<Number> = [1, 2, 3, 4, 5];
+            await expect(accessPass.connect(admin).mint(receiverAddress, tokenIds)).not.to.be.reverted;
+            expect(await accessPass.connect(provider).totalSupply()).equal(tokenIds.length);
+        })
+
+        it('Should be decreased when a token is burned', async function () {
+            let tokenIds : Array<Number> = [1, 2, 3, 4, 5];
+            await expect(accessPass.connect(admin).mint(receiverAddress, tokenIds)).not.to.be.reverted;
+            await expect(accessPass.connect(proxy).burn(tokenIds[0])).not.to.be.reverted;
+            expect(await accessPass.connect(provider).totalSupply()).equal(tokenIds.length - 1);
+
+            await expect(accessPass.connect(proxy).burn(tokenIds[1])).not.to.be.reverted;
+            expect(await accessPass.connect(provider).totalSupply()).equal(tokenIds.length - 2);
         })
     })
 
