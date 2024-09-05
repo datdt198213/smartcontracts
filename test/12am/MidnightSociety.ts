@@ -9,15 +9,13 @@ describe("MidnightSociety", function () {
         operator : Signer,
         nonOperator : Signer,
         beneficiary : Signer,
-        gateway : Signer,
-        router : Signer,
         receiver : Signer,
         spender : Signer;
     let decimals: BigInt;
     let midnightSociety : Contract, vestingWalletFactory : Contract;
 
     beforeEach(async () => {
-        [owner, operator, nonOperator, beneficiary, gateway, router, receiver, spender] =
+        [owner, operator, nonOperator, beneficiary, receiver, spender] =
             await hre.ethers.getSigners();
 
         midnightSocietyContract = await hre.ethers.getContractFactory(
@@ -29,7 +27,7 @@ describe("MidnightSociety", function () {
 
         midnightSociety = await hre.upgrades.deployProxy(
             midnightSocietyContract,
-            [[await operator.getAddress()], await gateway.getAddress(), await router.getAddress()],
+            [[await operator.getAddress()]],
             { initializer: "initialize", kind: "uups" }
         );
         vestingWalletFactory = await hre.upgrades.deployProxy(
@@ -58,16 +56,6 @@ describe("MidnightSociety", function () {
             const OPERATOR_ROLE = await midnightSociety.OPERATOR_ROLE();
             const hasOperatorRole = await midnightSociety.hasRole(OPERATOR_ROLE, operator)
                 await expect(hasOperatorRole).to.be.equal(true);
-        });
-
-        it(`Should initialize gateway correctly`, async function () {
-            const gw = await midnightSociety.gateway();
-            expect(gw).to.equal(await gateway.getAddress());
-        });
-
-        it(`Should initialize router correctly`, async function () {
-            const rt = await midnightSociety.router();
-            expect(rt).to.equal(await router.getAddress());
         });
     });
 
