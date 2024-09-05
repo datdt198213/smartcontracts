@@ -8,8 +8,8 @@ async function main() {
     ]
     const beaconOwner = operators[1];
 
-    const gateway = '0x336038b699730778Ddd801aB6319e8500C9B88eF';
-    const router = '0x08436839AD9bd38c56efA214d78201D303100989';
+    const gateway = '0xF99a637842E0282002399fD9f2024d485B170850';
+    const router = '0x02C5F9592E8873e160c98C01689F33D1F4347592';
     const token = await upgrades.deployProxy(tokenContract, [operators, gateway, router], {initialize: "initialize", kind: "uups"});
     const tokenAddress = await token.getAddress();
     console.log(`Deploy token to: ${tokenAddress}`);

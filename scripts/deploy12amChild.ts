@@ -6,8 +6,8 @@ async function main() {
         '0x8c3AE5DbE2900bfBA1Bdb7606D93a96362b0DB33',
         '0xc2CCcfd3215A44104D74c5188217574c92d9d745',
     ]
-    const gateway = '0x033CA6937a6eF7145A75bFc23C1640F0c7b8a98B';
-    const rootToken = '0x2405206022B2bB089E6D11CC7bcA1551307F95Af';
+    const gateway = '0x0778Ff3f63bd242938Ea111f047aD1D1bDdBAD4F';
+    const rootToken = '0x94c3EA735DaAd43c5A9E48De2E42284951Bfb1a1';
     const deployed = await upgrades.deployProxy(token, [gateway, rootToken, proxies], {initialize: "initialize", kind: "uups"});
     console.log(`Deploy to: ${await deployed.getAddress()}`);
 }
