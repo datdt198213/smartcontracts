@@ -74,7 +74,7 @@ describe("AccessPass", function () {
                 await accessPass.connect(admin).hasRole(adminRole, admin)
             ).to.be.equal(true);
         });
-    
+
         it(`The total supply equals 0`, async function () {
             expect(await accessPass.connect(admin).totalSupply()).equal(0);
         })
@@ -709,13 +709,13 @@ describe("AccessPass", function () {
     })
 
     describe(`totalSupply()`, async function () {
-        it('should increase when tokens are minted', async function () {
+        it('Should be increased when tokens are minted', async function () {
             let tokenIds : Array<Number> = [1, 2, 3, 4, 5];
             await expect(accessPass.connect(admin).mint(receiverAddress, tokenIds)).not.to.be.reverted;
             expect(await accessPass.connect(provider).totalSupply()).equal(tokenIds.length);
         })
 
-        it('should decrease when a token is burned', async function () {
+        it('Should be decreased when a token is burned', async function () {
             let tokenIds : Array<Number> = [1, 2, 3, 4, 5];
             await expect(accessPass.connect(admin).mint(receiverAddress, tokenIds)).not.to.be.reverted;
             await expect(accessPass.connect(proxy).burn(tokenIds[0])).not.to.be.reverted;
@@ -724,7 +724,7 @@ describe("AccessPass", function () {
             await expect(accessPass.connect(proxy).burn(tokenIds[1])).not.to.be.reverted;
             expect(await accessPass.connect(provider).totalSupply()).equal(tokenIds.length - 2);
         })
-    })   
+    })
 
     async function setApprovalForAll(contract : Contract, signer : Signer, operator : string, approved : boolean) {
         const tx = await contract.connect(signer).setApprovalForAll(operator, approved)
