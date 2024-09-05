@@ -1,0 +1,8 @@
+/node_modules
+/.idea
+*.tsbuildinfo
+.env.custom-chain
+/cache
+/artifacts
+/.openzeppelin
+/typechain-types
