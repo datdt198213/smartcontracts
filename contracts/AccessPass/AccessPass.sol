@@ -26,7 +26,6 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         require(endpoint != address(0));
 
         _proxyApproved = true;
-        _totalSupply = 0;
 
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
@@ -98,8 +97,8 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
                 lastMax = tokenId;
             }
         }
-        _totalSupply += tokenIds.length;
         _maxOwnedTokenId = lastMax;
+        _totalSupply += tokenIds.length;
     }
 
     function totalSupply() public view virtual returns (uint256) {
@@ -108,6 +107,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
 
     function burn(uint256 tokenId) public {
         require(_isAuthorized(_ownerOf(tokenId), _msgSender(), tokenId), "Caller is not owner nor approved");
+
         _totalSupply -= 1;
         _burn(tokenId);
     }
