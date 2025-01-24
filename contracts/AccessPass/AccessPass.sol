@@ -4,55 +4,47 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./URISwitchable.sol";
 
-import "./interfaces/IERC721Lockable.sol";
-import "./utils/URISwitchable.sol";
+contract TestPass is URISwitchable, ERC721, AccessControl, Ownable {  
+    bool public frozen = false;
 
-contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Lockable {  
+    bool private _proxyApproved;
 
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
 
-    bool public frozen = false;
-    bool private _proxyApproved;
-    mapping(uint256 => bool) private _lockedTokens;
-    uint256 private _maxOwnedTokenId;
-    uint256 private _totalSupply;
-
-    constructor(string memory name, string memory symbol, address admin, address endpoint, address[] memory proxies)
-        Ownable(admin)
-        ERC721(name, symbol)
+    constructor(address[] memory operators, bool approveProxy, address[] memory proxies)
+        Ownable(_msgSender())
+        ERC721("AccessPass", "AccessPass")
     {
-        require(endpoint != address(0));
-
-        _proxyApproved = true;
-        _totalSupply = 0;
+        _proxyApproved = approveProxy;
 
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        // Grant the endpoint contract the admin role so it will be able to control proxies list
-        _grantRole(DEFAULT_ADMIN_ROLE, endpoint);
-        // Grant the endpoint contract the operator role so it will be able to mint tokens
-        _grantRole(OPERATOR_ROLE, endpoint);
-        // Initialize proxies list
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
+        for (uint256 i = 0; i < operators.length; i++) {
+            require(operators[i] != address(0), "Can't add a null address as operator");
+            _grantRole(OPERATOR_ROLE, operators[i]);
+        }
+
         for (uint256 i = 0; i < proxies.length; i++) {
-            require(proxies[i] != address(0));
+            require(proxies[i] != address(0), "Can't add a null address as proxy");
             _grantRole(PROXY_ROLE, proxies[i]);
         }
     }
 
     modifier onlyOwnerOrOperator() {
         require(
-            hasRole(OPERATOR_ROLE, msg.sender) || msg.sender == owner()
+            hasRole(OPERATOR_ROLE, msg.sender) || msg.sender == owner(),
+            "Function can only be called by owner or operator"
         );
         _;
     }
 
     function freezeBaseOriginalURI() external onlyOwner
     {
-        require(_hasLength(_originalBaseURI));
-
         frozen = true;
     }
 
@@ -61,7 +53,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         override
         onlyOwnerOrOperator
     {
-        require(!frozen);
+        require(!frozen, "Contract is frozen");
 
         super.setBaseOriginalURL(baseURL);
     }
@@ -82,33 +74,22 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         super.switchURL();
     }
 
-    function mint(address to, uint256[] memory tokenIds)
+    function devMint(address to, uint256[] memory tokenIds)
         external
         onlyOwnerOrOperator
     {
-        require(tokenIds.length > 0);
+        require(tokenIds.length > 0, "Invalid input array");
 
-        uint256 lastMax = _maxOwnedTokenId;
         for(uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(tokenId > 0);
+            require(tokenId > 0, "Token ID must be greater than zero");
             _safeMint(to, tokenId);
-
-            if (tokenId > lastMax) {
-                lastMax = tokenId;
-            }
         }
-        _totalSupply += tokenIds.length;
-        _maxOwnedTokenId = lastMax;
-    }
-
-    function totalSupply() public view virtual returns (uint256) {
-        return _totalSupply;
     }
 
     function burn(uint256 tokenId) public {
         require(_isAuthorized(_ownerOf(tokenId), _msgSender(), tokenId), "Caller is not owner nor approved");
-        _totalSupply -= 1;
+
         _burn(tokenId);
     }
 
@@ -118,6 +99,7 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
         override(URISwitchable, ERC721)
         returns (string memory)
     {
+        require(tokenId > 0, "Token ID cannot be 0");
         _requireOwned(tokenId);
 
         return URISwitchable.tokenURI(tokenId);
@@ -125,34 +107,6 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
 
     function setProxyApproval(bool approval) external onlyOwner {
         _proxyApproved = approval;
-    }
-
-    function lock(uint256 id) external virtual override onlyRole(OPERATOR_ROLE) {
-        require(!isLocked(id));
-        _lockedTokens[id] = true;
-
-        emit Lock(id);
-    }
-
-    function unlock(uint256 id) external virtual override onlyRole(OPERATOR_ROLE) {
-        require(isLocked(id));
-        _lockedTokens[id] = false;
-
-        emit Unlock(id);
-    }
-
-    function isLocked(uint256 tokenId) public view virtual override returns (bool) {
-        _requireOwned(tokenId);
-        return _lockedTokens[tokenId];
-    }
-
-    function approve(address to, uint256 tokenId) public virtual override {
-        require(!isLocked(tokenId));
-        super.approve(to, tokenId);
-    }
-
-    function maxOwnedTokenId() public view returns (uint256) {
-        return _maxOwnedTokenId;
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -173,23 +127,5 @@ contract AccessPass is URISwitchable, ERC721, AccessControl, Ownable, IERC721Loc
     {
         if (_proxyApproved && hasRole(PROXY_ROLE, operator)) return true;
         return super.isApprovedForAll(owner, operator);
-    }
-
-    function _update(
-        address to,
-        uint256 tokenId,
-        address auth
-    ) internal virtual override returns (address) {
-        address from = _ownerOf(tokenId);
-
-        if (from == address(0) && auth != address(0)) {
-            revert ERC721InvalidSender(address(0));
-        }
-
-        if (from != address(0)) {
-            require(!isLocked(tokenId));
-        }
-
-        return super._update(to, tokenId, auth);
     }
 }

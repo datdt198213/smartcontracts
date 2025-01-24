@@ -1,4 +1,3 @@
-const { ethers, upgrades } = require('hardhat');
 
 async function main() {
     const tokenContract = await ethers.getContractFactory('MidnightSociety');

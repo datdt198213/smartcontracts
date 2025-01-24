@@ -1,0 +1,787 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/anlab/work_dir/my-repo/smartcontracts/contracts/AccessPass/AccessPass.sol": {
+      "lastModificationDate": 1737600402187,
+      "contentHash": "5e61f3e2119803030ae12dc122649950",
+      "sourceName": "contracts/AccessPass/AccessPass.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/token/ERC721/ERC721.sol",
+        "./URISwitchable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TestPass"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/contracts/AccessPass/URISwitchable.sol": {
+      "lastModificationDate": 1737600402196,
+      "contentHash": "b4130d9f8b1e19672476c797bdd810ad",
+      "sourceName": "contracts/AccessPass/URISwitchable.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/utils/Strings.sol",
+        "./IURISwitchable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "URISwitchable"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
+      "lastModificationDate": 1737600309182,
+      "contentHash": "4c80b7fdf559a9a348e832a57d072a0b",
+      "sourceName": "@openzeppelin/contracts/access/AccessControl.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IAccessControl.sol",
+        "../utils/Context.sol",
+        "../utils/introspection/ERC165.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "AccessControl"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1737600309357,
+      "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol": {
+      "lastModificationDate": 1737600309293,
+      "contentHash": "a7951c81f7037d558c6d2f220b0cb38e",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/ERC721.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC721.sol",
+        "./extensions/IERC721Metadata.sol",
+        "./utils/ERC721Utils.sol",
+        "../../utils/Context.sol",
+        "../../utils/Strings.sol",
+        "../../utils/introspection/ERC165.sol",
+        "../../interfaces/draft-IERC6093.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC721"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/contracts/AccessPass/IURISwitchable.sol": {
+      "lastModificationDate": 1737600402192,
+      "contentHash": "08e9ed33f18324c02daea0566b560865",
+      "sourceName": "contracts/AccessPass/IURISwitchable.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IURISwitchable"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
+      "lastModificationDate": 1737600309369,
+      "contentHash": "a55fef2557b35bac18a1880d3c2e6740",
+      "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./math/Math.sol",
+        "./math/SafeCast.sol",
+        "./math/SignedMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Strings"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol": {
+      "lastModificationDate": 1737600309352,
+      "contentHash": "2b2665ae9bdb1af440658741a77fe213",
+      "sourceName": "@openzeppelin/contracts/utils/math/Math.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../Panic.sol",
+        "./SafeCast.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Math"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol": {
+      "lastModificationDate": 1737600309365,
+      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
+      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SafeCast"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": {
+      "lastModificationDate": 1737600309367,
+      "contentHash": "ae3528afb8bdb0a7dcfba5b115ee8074",
+      "sourceName": "@openzeppelin/contracts/utils/math/SignedMath.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./SafeCast.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SignedMath"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/Panic.sol": {
+      "lastModificationDate": 1737600309360,
+      "contentHash": "2133dc13536b4a6a98131e431fac59e1",
+      "sourceName": "@openzeppelin/contracts/utils/Panic.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Panic"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1737600309218,
+      "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
+      "lastModificationDate": 1737600309265,
+      "contentHash": "7c03c1e37c3dc24eafb76dc2b8a5c3a6",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC165.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC165"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
+      "lastModificationDate": 1737600309313,
+      "contentHash": "6f7fac9fa0df6004375e18b7ff7edf4e",
+      "sourceName": "@openzeppelin/contracts/access/IAccessControl.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IAccessControl"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
+      "lastModificationDate": 1737600309322,
+      "contentHash": "bf0119eb2a570f219729ff38b6cd1df8",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC165"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
+      "lastModificationDate": 1737600309240,
+      "contentHash": "267d92fe4de67b1bdb3302c08f387dbf",
+      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol": {
+      "lastModificationDate": 1737600309333,
+      "contentHash": "1fdc621cd6747e8985e11fc76ce74511",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/introspection/IERC165.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC721"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol": {
+      "lastModificationDate": 1737600309337,
+      "contentHash": "12c206f185cb951213799561fdcaa40d",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC721Metadata"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol": {
+      "lastModificationDate": 1737600309302,
+      "contentHash": "f4b67273e290784d0e155f004ae52f0b",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC721Receiver.sol",
+        "../../../interfaces/draft-IERC6093.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC721Utils"
+      ]
+    },
+    "/home/anlab/work_dir/my-repo/smartcontracts/node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": {
+      "lastModificationDate": 1737600309339,
+      "contentHash": "729ce0904eb533489ffcc3bfe91237d4",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC721Receiver"
+      ]
+    }
+  }
+}

@@ -4,35 +4,26 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-contract-sizer";
 
 require('dotenv').config()
-
-import "./scripts/tasks/deploy.ts";
-import "./scripts/tasks/gen.ts";
-import "./scripts/tasks/mint.ts";
-import "./scripts/tasks/transfer.ts";
-import "./scripts/tasks/xferEth.ts";
-
   
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
-  settings: {
-    viaIR: true,
-    optimizer: {
-      enabled: true,
-      runs: 200,
-    },
-  },
+    solidity: {
+        version: "0.8.24",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
   networks: {
-    conduit: {
-      url: 'https://rpc-pmtest-6lw45cjbgl.t.conduit.xyz',
-      accounts: [''],
+    sepolia: {
+      url: 'https://eth-sepolia.api.onfinality.io/public',
+      accounts: ['e01d80ad71ad2a5ba1f055e325c8cb73d8b169775a4086035d01799e7ca141e4', '5f00a94a5ea03fe9272e6f04b5c517297bde4d4ead2d7b1af443971dff2049f1'],
     },
-    arbitrum_l2: {
-      url: 'https://sepolia-rollup.arbitrum.io/rpc',
-      accounts: [''],
-	},
   },
   etherscan: {
     apiKey: {
+      sepolia: 'WDEIINZHN7I2XNZ19NHK7ME1J54JHRQBBJ',  
       arbitrum_l2: "abcxzy",
       conduit:  "abcxzy",
     },
